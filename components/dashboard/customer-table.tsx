@@ -1,15 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AlertTriangle, Search, MoreHorizontal, RefreshCw } from "lucide-react"
+import { AlertTriangle, Search, MoreHorizontal, RefreshCw, Send, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 
-// 1. Interface yang bersih (hanya satu definisi)
+// 1. Interface yang bersih (KTP data pelanggan)
 interface Customer {
   id: string
   name: string
@@ -22,17 +34,17 @@ export function CustomerTable() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(false)
 
-  // 2. Fungsi fetch yang sudah diperbaiki
+  // 2. Fungsi tunggal untuk ambil data dari Laptop (Python)
   const fetchCustomers = async () => {
     setLoading(true)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
       const res = await fetch(`${apiUrl}/api/customers`)
-      if (!res.ok) throw new Error("Gagal mengambil data")
+      if (!res.ok) throw new Error("Gagal ambil data")
       const data = await res.json()
       setCustomers(data)
     } catch (e) {
-      console.log("Gagal mengambil data pelanggan atau server offline.")
+      console.error("Gagal konek ke Python. Cek Ngrok!")
     } finally {
       setLoading(false)
     }
@@ -45,15 +57,15 @@ export function CustomerTable() {
   return (
     <div className="glass-card rounded-xl overflow-hidden border border-[rgba(0,240,255,0.1)]">
       {/* Header Tabel */}
-      <div className="px-6 py-4 border-b border-[rgba(0,240,255,0.1)]">
-        <div className="flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-[rgba(0,240,255,0.1)] bg-[rgba(15,23,42,0.5)]">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[rgba(239,68,68,0.1)]">
+            <div className="p-2 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.2)]">
               <AlertTriangle className="w-5 h-5 text-[#EF4444]" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground">Real Customer Data</h2>
-              <p className="text-sm text-muted-foreground">Monitoring antrean tagihan di laptop</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Antrean Tagihan Aktif</p>
             </div>
           </div>
           
@@ -62,9 +74,9 @@ export function CustomerTable() {
               variant="outline" 
               size="icon" 
               onClick={fetchCustomers}
-              className={cn("border-[rgba(0,240,255,0.2)]", loading && "animate-spin")}
+              className={cn("border-[rgba(0,240,255,0.2)] bg-transparent", loading && "animate-spin")}
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 text-[#00F0FF]" />
             </Button>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -74,34 +86,34 @@ export function CustomerTable() {
         </div>
       </div>
 
-      {/* Area Tabel */}
+      {/* Konten Tabel */}
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-[#0B1120]">
             <TableRow className="border-b border-[rgba(0,240,255,0.1)]">
-              <TableHead className="text-muted-foreground">ID PELANGGAN</TableHead>
-              <TableHead className="text-muted-foreground">NAMA</TableHead>
-              <TableHead className="text-muted-foreground">WILAYAH</TableHead>
-              <TableHead className="text-muted-foreground">STATUS</TableHead>
+              <TableHead className="text-muted-foreground font-bold">ID PELANGGAN</TableHead>
+              <TableHead className="text-muted-foreground font-bold">NAMA</TableHead>
+              <TableHead className="text-muted-foreground font-bold">WILAYAH</TableHead>
+              <TableHead className="text-muted-foreground font-bold">STATUS</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {customers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground italic">
-                  {loading ? "Sedang menyambungkan ke laptop..." : "Tidak ada data pelanggan yang ditemukan."}
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground italic">
+                  {loading ? "Sedang memuat..." : "Koneksi ke laptop terputus atau data kosong."}
                 </TableCell>
               </TableRow>
             ) : (
               customers.map((customer) => (
                 <TableRow key={customer.id} className="border-b border-[rgba(0,240,255,0.05)] hover:bg-[rgba(0,240,255,0.03)]">
-                  <TableCell className="font-mono text-[#00F0FF]">{customer.id}</TableCell>
-                  <TableCell className="font-medium">{customer.name}</TableCell>
+                  <TableCell className="font-mono font-bold text-[#00F0FF]">{customer.id}</TableCell>
+                  <TableCell className="font-medium text-foreground">{customer.name}</TableCell>
                   <TableCell className="text-muted-foreground text-xs uppercase">{customer.area}</TableCell>
                   <TableCell>
                     <Badge className={cn(
-                      "border-0 px-2 py-0.5", 
+                      "border-0 px-2 py-0.5 font-bold text-[10px]", 
                       customer.status === "SUSPEND" ? "bg-red-500/20 text-red-400" : "bg-orange-500/20 text-orange-400"
                     )}>
                       {customer.status}
@@ -110,13 +122,17 @@ export function CustomerTable() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-[#00F0FF]">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-[#0B1120] border-[rgba(0,240,255,0.2)]">
-                        <DropdownMenuItem className="cursor-pointer">Re-Blast WA</DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">Detail Info</DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="bg-[#0B1120] border-[rgba(0,240,255,0.2)] text-foreground">
+                        <DropdownMenuItem className="flex gap-2 cursor-pointer">
+                          <Send className="w-4 h-4 text-[#00F0FF]" /> <span>Re-Blast WA</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex gap-2 cursor-pointer">
+                          <Users className="w-4 h-4 text-[#10B981]" /> <span>Detail Pelanggan</span>
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
